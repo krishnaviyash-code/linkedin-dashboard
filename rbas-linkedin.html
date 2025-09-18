@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBAS Global - LinkedIn Content Strategy Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Industrial Professional (Grey, Orange, Dark Blue, Light Grey) -->
+    <!-- Application Structure Plan: A single-page dashboard design was chosen for optimal usability. The structure includes a top navigation bar for quick access to key sections: Overview, Competitor Analysis, Content Calendar, and Strategy. This thematic organization allows users to easily consume high-level insights first (dashboard charts), dive into competitive context, explore the detailed, filterable calendar, and finally review strategic guidelines. This flow is more intuitive than a linear report, promoting exploration and quick access to relevant information. Key interactions include dropdown filters for the calendar (by week, topic, objective) and clickable post cards that reveal full content in a modal, keeping the main interface clean and focused. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Content mix across 4 weeks. Goal: Inform on strategic balance. Viz/Method: Doughnut Chart (Chart.js). Interaction: Hover for tooltips showing percentages. Justification: Instantly communicates the proportional focus on different content pillars.
+        - Report Info: Posts per strategic objective. Goal: Compare effort vs. goals. Viz/Method: Bar Chart (Chart.js). Interaction: Hover for tooltips showing post counts. Justification: Clearly visualizes the volume of content dedicated to each marketing funnel stage.
+        - Report Info: 16 individual posts. Goal: Organize and detail the schedule. Viz/Method: Interactive Grid of Cards (HTML/Tailwind/JS). Interaction: Filtering by week/topic/objective and clicking a card to open a modal with full post details. Justification: Provides a high-level overview while allowing deep dives without cluttering the UI. This is superior to a static list for exploring a multi-week strategy.
+        - Report Info: Competitor analysis findings. Goal: Inform on market context. Viz/Method: Accordion/Tabbed section (HTML/Tailwind/JS). Interaction: Click to expand details for each competitor. Justification: Organizes detailed text-based analysis compactly.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F3F4F6; /* A very light grey for background */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .nav-link {
+            transition: color 0.2s, border-bottom-color 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #FF7A00;
+            border-bottom-color: #FF7A00;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #E5E7EB;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #9CA3AF;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6B7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-[#1F4E79] rounded-md flex items-center justify-center text-white font-bold text-lg">R</div>
+                <h1 class="text-xl font-bold text-gray-700">RBAS Global <span class="font-normal text-gray-500">| LinkedIn Strategy</span></h1>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#overview" class="nav-link font-medium pb-1 active">Overview</a>
+                <a href="#competitors" class="nav-link font-medium pb-1">Competitor Analysis</a>
+                <a href="#calendar" class="nav-link font-medium pb-1">Content Calendar</a>
+                <a href="#strategy" class="nav-link font-medium pb-1">Strategy & Guidelines</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Overview Section -->
+        <section id="overview" class="mb-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Dashboard Overview</h2>
+            <p class="text-gray-600 mb-8">High-level view of the 4-week content plan, visualizing the strategic mix and objectives.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 font-medium">Total Posts</h3>
+                    <p class="text-3xl font-bold text-[#1F4E79]">16</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 font-medium">Cadence</h3>
+                    <p class="text-3xl font-bold text-[#1F4E79]">4 <span class="text-lg font-medium">posts/week</span></p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 font-medium">Primary Timezone</h3>
+                    <p class="text-3xl font-bold text-[#1F4E79]">IST</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-500 font-medium">Calendar Duration</h3>
+                    <p class="text-3xl font-bold text-[#1F4E79]">4 <span class="text-lg font-medium">weeks</span></p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-700">Content Mix by Topic</h3>
+                    <div class="chart-container">
+                        <canvas id="contentMixChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 text-center text-gray-700">Posts by Objective</h3>
+                     <div class="chart-container">
+                        <canvas id="objectivesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Competitor Analysis Section -->
+        <section id="competitors" class="mb-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Competitor Analysis</h2>
+            <p class="text-gray-600 mb-8">Insights from recent LinkedIn activity of key players in the Indian market.</p>
+            <div class="space-y-4" id="competitor-accordion">
+                <!-- Competitor data will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Content Calendar Section -->
+        <section id="calendar" class="mb-12 scroll-mt-20">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Content Calendar</h2>
+            <p class="text-gray-600 mb-6">Interactive 4-week schedule. Click on any post to see full details.</p>
+            
+            <div class="bg-white p-4 rounded-lg shadow mb-6 flex flex-wrap gap-4 items-center">
+                <h3 class="text-lg font-semibold mr-4">Filters:</h3>
+                <div class="flex-grow md:flex-grow-0">
+                    <label for="week-filter" class="sr-only">Filter by Week</label>
+                    <select id="week-filter" class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#FF7A00] focus:border-[#FF7A00] block p-2.5">
+                        <option value="all">All Weeks</option>
+                        <option value="1">Week 1</option>
+                        <option value="2">Week 2</option>
+                        <option value="3">Week 3</option>
+                        <option value="4">Week 4</option>
+                    </select>
+                </div>
+                <div class="flex-grow md:flex-grow-0">
+                    <label for="topic-filter" class="sr-only">Filter by Topic</label>
+                    <select id="topic-filter" class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#FF7A00] focus:border-[#FF7A00] block p-2.5">
+                        <option value="all">All Topics</option>
+                        <!-- Options will be injected by JS -->
+                    </select>
+                </div>
+                <div class="flex-grow md:flex-grow-0">
+                    <label for="objective-filter" class="sr-only">Filter by Objective</label>
+                    <select id="objective-filter" class="w-full md:w-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#FF7A00] focus:border-[#FF7A00] block p-2.5">
+                        <option value="all">All Objectives</option>
+                        <!-- Options will be injected by JS -->
+                    </select>
+                </div>
+            </div>
+
+            <div id="calendar-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Calendar posts will be injected here by JS -->
+            </div>
+        </section>
+
+        <!-- Strategy & Guidelines Section -->
+        <section id="strategy" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Strategy & Guidelines</h2>
+            <p class="text-gray-600 mb-8">Key principles and a checklist to ensure consistent, high-quality posting.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Content Principles</h3>
+                    <ul class="space-y-3 text-gray-600 list-disc list-inside">
+                        <li><strong>Professional & Pragmatic:</strong> Maintain a technically precise, safety-forward voice. Avoid marketing hype.</li>
+                        <li><strong>Audience-Centric:</strong> Address the needs of contractors, fleet managers, and dealers with practical insights.</li>
+                        <li><strong>Visual Consistency:</strong> Use the specified image theme with silhouetted operators to build a strong, brand-safe visual identity.</li>
+                        <li><strong>India-First, Global-Ready:</strong> Use Indian English but ensure content is easily understood by a global audience.</li>
+                        <li><strong>Value-Driven CTAs:</strong> Align calls-to-action with the funnel stage, from awareness ("Learn more") to lead-gen ("Enquire now").</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Posting Checklist</h3>
+                    <ul class="space-y-3 text-gray-600 list-disc list-inside">
+                        <li>Double-check Asia/Kolkata times; schedule at least 24h in advance.</li>
+                        <li>Proofread for Indian English, technical accuracy, and safety-first messaging.</li>
+                        <li>Use 4–8 relevant hashtags; avoid banned/overly generic tags.</li>
+                        <li>Ensure image renders show PPE; no faces/logos/readable text.</li>
+                        <li>Link to website contact page; add UTM parameters to all outbound links.</li>
+                        <li>Engage with comments promptly to foster community.</li>
+                        <li>Monitor post-performance and adapt strategy based on what resonates.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="postModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-50">
+        <div id="modalContent" class="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="p-6 border-b flex justify-between items-start">
+                <div>
+                    <h3 id="modalTitle" class="text-2xl font-bold text-gray-800"></h3>
+                    <p id="modalDate" class="text-sm text-gray-500"></p>
+                </div>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">Full Post Content</h4>
+                        <div id="modalContentText" class="text-gray-600 whitespace-pre-wrap bg-gray-50 p-4 rounded-md text-sm border"></div>
+                        
+                        <h4 class="font-semibold text-gray-700 mt-4 mb-2">Short Caption</h4>
+                        <p id="modalCaptionShort" class="text-gray-600 italic text-sm">"</p>
+                        
+                        <h4 class="font-semibold text-gray-700 mt-4 mb-2">Hashtags</h4>
+                        <div id="modalHashtags" class="flex flex-wrap gap-2"></div>
+                        
+                        <h4 class="font-semibold text-gray-700 mt-4 mb-2">Call to Action</h4>
+                        <p id="modalCta" class="text-gray-600"></p>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-2">Image Generation Prompt</h4>
+                        <div class="bg-[#1F4E79] text-white p-4 rounded-lg font-mono text-xs">
+                           <p class="font-bold mb-2 break-words" id="modalImageTitle"></p>
+                           <p class="break-words" id="modalImagePrompt"></p>
+                        </div>
+                         <p class="text-xs text-gray-500 mt-2 text-center" id="modalImageAltText"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 border-t mt-auto text-center">
+                <a id="modalLink" href="#" target="_blank" rel="noopener noreferrer" class="bg-[#FF7A00] text-white font-bold py-2 px-4 rounded-lg hover:bg-opacity-90 transition-colors">View on Website (Placeholder)</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const calendarData = [
+                {
+                    "id": "rbas-20250922-w1-p1",
+                    "date": "2025-09-22",
+                    "day_of_week": "Mon",
+                    "week": 1,
+                    "primary_post_time_ist": "11:00",
+                    "objective": "awareness",
+                    "topic": "Company Introduction",
+                    "content_text": "Since 2014, RBAS Global has been a trusted partner in exporting top-tier construction, mining, and agricultural equipment from India to over 25 countries.\n\nOur mission is simple: deliver the right product at the right time. We achieve this through a commitment to integrity, transparency, and building long-term relationships with our clients across Africa, Asia, Europe, and the Americas.\n\nFrom sourcing reliable Backhoe Loaders and Excavators to providing turnkey equipment solutions, our team in Bengaluru ensures every machine meets stringent quality and compliance standards. We're not just suppliers; we are your strategic partners in achieving project success, offering competitive pricing without compromising on reliability.\n\nExplore how our expertise in global trade and logistics can empower your next project.",
+                    "caption_short": "Your trusted partner for construction & mining equipment exports from India since 2014. RBAS Global delivers reliability worldwide.",
+                    "hashtags": ["#RBASGlobal", "#ConstructionEquipment", "#MiningEquipment", "#MadeInIndia", "#GlobalExports", "#HeavyMachinery"],
+                    "cta": "Learn more about our mission on our website.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic exterior shot of a busy port in India, with a branded RBAS Global shipping container being loaded. Industrial-orange (#FF7A00) and neutral grey (#6B7280) palette. Silhouetted port workers in PPE are overseeing the operation. Background shows other ships and cranes, strongly blurred. Ambient daylight with soft overcast lighting.",
+                        "title": "RBAS Global - Logistics and Global Reach",
+                        "alt_text": "Silhouetted workers at an Indian port overseeing the loading of an RBAS Global container."
+                    }
+                },
+                {
+                    "id": "rbas-20250924-w1-p2",
+                    "date": "2025-09-24",
+                    "day_of_week": "Wed",
+                    "week": 1,
+                    "primary_post_time_ist": "14:30",
+                    "objective": "consideration",
+                    "topic": "Product Spotlight",
+                    "content_text": "Meet the workhorse of countless Indian construction sites: the Backhoe Loader. Its versatility is unmatched, seamlessly transitioning from digging and trenching to material handling and loading.\n\nAt RBAS Global, we source and export robust Backhoe Loaders that deliver exceptional performance and fuel efficiency. Partnering with leading OEMs like BULL Machines, we ensure each unit is built for durability, operator comfort, and ease of maintenance—critical factors for maximizing uptime and Total Cost of Ownership (TCO).\n\nWhether you're a contractor managing a fleet or a rental owner serving diverse clients, our quality-assured Backhoe Loaders provide the power and reliability you need to get the job done. We handle all export logistics, so you can focus on your operations.",
+                    "caption_short": "Versatile. Reliable. Powerful. Discover the Backhoe Loaders we export globally. Quality and performance, delivered.",
+                    "hashtags": ["#BackhoeLoader", "#Earthmoving", "#ConstructionLife", "#HeavyEquipment", "#BullMachines", "#EquipmentExporter"],
+                    "cta": "Download the spec sheet from our website.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic exterior shot of a construction site in India featuring a powerful Backhoe Loader. Industrial-orange (#FF7A00) and neutral grey (#6B7280) palette. The machine is actively digging, operated by a silhouetted (blacked-out) worker in PPE. Background is a blurred construction zone. Soft overcast daylight.",
+                        "title": "RBAS Global - Backhoe Loader in Action",
+                        "alt_text": "Silhouetted operator using an RBAS Global sourced Backhoe Loader on an Indian construction site."
+                    }
+                },
+                {
+                    "id": "rbas-20250926-w1-p3",
+                    "date": "2025-09-26",
+                    "day_of_week": "Fri",
+                    "week": 1,
+                    "primary_post_time_ist": "10:30",
+                    "objective": "awareness",
+                    "topic": "Safety Tip",
+                    "content_text": "Safety on site starts before the engine does. A thorough pre-operation inspection is non-negotiable for any piece of heavy machinery, including Compactors.\n\nBefore starting a Soil or Tandem Compactor, operators should conduct a 'walk-around' check:\n1. Tyres/Drums: Check for proper inflation, cuts, or damage.\n2. Fluid Levels: Inspect engine oil, hydraulic fluid, and coolant.\n3. Safety Features: Ensure beacons, alarms, and ROPS are functional.\n4. Work Area: Clear the path of personnel and obstacles.\n\nA few minutes spent on these checks can prevent hours of downtime and, most importantly, protect your team. At RBAS Global, we export equipment with safety as a priority, but operational discipline is key.",
+                    "caption_short": "Safety first! A simple pre-operation check on your Compactor can prevent accidents and downtime. Stay safe, stay productive.",
+                    "hashtags": ["#SafetyFirst", "#ConstructionSafety", "#HeavyEquipmentSafety", "#OperatorTips", "#Compactor", "#SiteSafety"],
+                    "cta": "Find more maintenance tips on our blog.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic detail shot focusing on the checklist clipboard held by a silhouetted worker in PPE, standing next to a Soil Compactor on an Indian worksite. The compactor is visible but softly out of focus in the background. Industrial-orange (#FF7A00) and grey (#6B7280) tones. Soft daylight.",
+                        "title": "RBAS Global - Pre-Operation Safety Check",
+                        "alt_text": "Silhouetted operator with a checklist performing a safety inspection on a compactor."
+                    }
+                },
+                {
+                    "id": "rbas-20250927-w1-p4",
+                    "date": "2025-09-27",
+                    "day_of_week": "Sat",
+                    "week": 1,
+                    "primary_post_time_ist": "12:00",
+                    "objective": "dealer-support",
+                    "topic": "Export Logistics",
+                    "content_text": "Getting heavy equipment from our yard in India to your site in Africa or the Americas requires precision logistics. This is where RBAS Global's expertise shines.\n\nWe manage the entire export process, providing a seamless, transparent experience for our international dealers and clients. This includes:\n- Secure Sourcing: Partnering with trusted OEMs.\n- Quality Assurance: Rigorous pre-shipment inspections.\n- Compliant Documentation: Handling all customs and trade paperwork.\n- Efficient Shipping: Coordinating land and sea freight for timely delivery.\n\nOur deep understanding of international trade regulations ensures your equipment arrives without delays or compliance issues. Trust us to be your reliable link in the global supply chain.",
+                    "caption_short": "From India to the world. Our export logistics expertise ensures your equipment arrives safely and on time. Partner with RBAS Global.",
+                    "hashtags": ["#ExportExperts", "#Logistics", "#SupplyChain", "#HeavyMachineryExport", "#GlobalTrade", "#EquipmentDealer"],
+                    "cta": "Talk to our logistics team today.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot of a map of the world on a digital screen, with glowing lines connecting India to various continents. In the foreground, the blurred silhouette of a person at a desk is visible. Industrial-blue (#1F4E79) and orange (#FF7A00) tones dominate. Professional office setting.",
+                        "title": "RBAS Global - Global Logistics Network",
+                        "alt_text": "A digital map showing RBAS Global's export routes from India to the world."
+                    }
+                },
+                {
+                    "id": "rbas-20250929-w2-p1",
+                    "date": "2025-09-29",
+                    "day_of_week": "Mon",
+                    "week": 2,
+                    "primary_post_time_ist": "11:00",
+                    "objective": "consideration",
+                    "topic": "Use-Case",
+                    "content_text": "For large-scale road construction and land grading projects, the Motor Grader is indispensable. Its long blade provides the precision needed to create a perfectly flat, graded surface, which is crucial for foundation work and pavement laying.\n\nWe export Motor Graders that are engineered for high performance in challenging Indian and international terrains. Key features our clients value include advanced hydraulic systems for precise blade control, ergonomic cabins that reduce operator fatigue, and robust powertrain options that deliver consistent power and torque.\n\nBy ensuring a level base, our Motor Graders help improve project quality, reduce rework, and ultimately lower operational costs. Let us help you find the right machine for your road project, no matter where you are in the world.",
+                    "caption_short": "Precision and power for perfect grading. Our Motor Graders are essential for quality road construction projects worldwide.",
+                    "hashtags": ["#MotorGrader", "#RoadConstruction", "#CivilEngineering", "#Grading", "#HeavyEquipment", "#Infrastructure"],
+                    "cta": "Enquire about our range of Motor Graders.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic, wide exterior shot of a Motor Grader creating a smooth, level surface on a new roadway in rural India. The long blade is the focus. Operated by a silhouetted worker in PPE. Background of rolling hills is strongly blurred. Golden hour lighting, casting long, soft shadows. Industrial-orange (#FF7A00) machine.",
+                        "title": "RBAS Global - Motor Grader at Work",
+                        "alt_text": "A Motor Grader operated by a silhouetted worker grading a road in India at sunset."
+                    }
+                },
+                {
+                    "id": "rbas-20251001-w2-p2",
+                    "date": "2025-10-01",
+                    "day_of_week": "Wed",
+                    "week": 2,
+                    "primary_post_time_ist": "14:30",
+                    "objective": "lead-gen",
+                    "topic": "Customer Story",
+                    "content_text": "A mining contractor in East Africa faced a challenge: they needed a fleet of reliable Excavators delivered within a tight project deadline. Sourcing locally proved expensive and slow.\n\nThey partnered with RBAS Global. Our team quickly sourced five high-performance Excavators from our network in India, conducted thorough quality inspections, and managed the entire export process. The machines were delivered to the port ahead of schedule, fully compliant with regional import regulations.\n\nThe result? The client started their project on time, equipped with machinery that offered a superior Total Cost of Ownership (TCO) compared to local options. This is the RBAS Global promise: the right product, at the right time, with transparency you can trust.\n\n(Client details are anonymised for confidentiality).",
+                    "caption_short": "From a tight deadline in India to project success in Africa. See how we delivered a fleet of Excavators on time and on budget.",
+                    "hashtags": ["#CustomerSuccess", "#MiningIndustry", "#Excavator", "#GlobalProjects", "#CaseStudy", "#EquipmentSolutions"],
+                    "cta": "Read the full case study on our website.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot of a large Excavator working in a quarry setting in India. Industrial-orange (#FF7A00) machine. The operator is a silhouette inside the cabin. The background is a dramatic but heavily blurred quarry wall. Strong, direct daylight creating defined shapes.",
+                        "title": "RBAS Global - Mining Excavator",
+                        "alt_text": "A powerful excavator operated by a silhouetted worker in a mining quarry."
+                    }
+                },
+                {
+                    "id": "rbas-20251003-w2-p3",
+                    "date": "2025-10-03",
+                    "day_of_week": "Fri",
+                    "week": 2,
+                    "primary_post_time_ist": "10:30",
+                    "objective": "awareness",
+                    "topic": "Behind-the-Scenes",
+                    "content_text": "What does quality assurance look like at RBAS Global? It's a meticulous, multi-point process that every machine undergoes before export.\n\nOur technical team, based in Bengaluru, inspects each piece of equipment—from Tractors to Compactors—against a comprehensive checklist. We verify engine performance, hydraulic system integrity, structural soundness, and safety feature functionality. We believe that transparency builds trust, so we provide detailed inspection reports to our clients before shipment.\n\nThis commitment to quality means you receive equipment that is ready to perform from day one, minimizing unexpected maintenance and maximizing your return on investment. It's not just about selling a machine; it's about delivering a promise of reliability.",
+                    "caption_short": "Behind the scenes of our quality assurance process. Every machine is meticulously inspected before we ship. That's our promise.",
+                    "hashtags": ["#QualityAssurance", "#BehindTheScenes", "#EquipmentInspection", "#Reliability", "#CustomerTrust", "#RBASGlobal"],
+                    "cta": "Ask us about our inspection process.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic, clean shot inside a well-lit workshop. A silhouetted technician in PPE is inspecting the engine of an agricultural Tractor with a diagnostic tool. The focus is on the technician's hands and the tool. Background is neatly organized tools and parts, heavily blurred. Industrial-grey (#6B7280) and orange (#FF7A00) accents.",
+                        "title": "RBAS Global - Quality Assurance Inspection",
+                        "alt_text": "A silhouetted technician performing a quality inspection on a tractor engine."
+                    }
+                },
+                {
+                    "id": "rbas-20251004-w2-p4",
+                    "date": "2025-10-04",
+                    "day_of_week": "Sat",
+                    "week": 2,
+                    "primary_post_time_ist": "12:00",
+                    "objective": "consideration",
+                    "topic": "Product Spotlight",
+                    "content_text": "In modern agriculture, the right implements can transform a Tractor's productivity. At RBAS Global, we export a wide range of agricultural implements designed for the diverse needs of farms worldwide.\n\nFrom cultivators that prepare the perfect seedbed to rotavators that are essential for soil pulverization, we source attachments that are durable, efficient, and compatible with a variety of tractor models. Our focus is on providing implements that enhance soil health, improve crop yields, and save valuable time and labour for farmers.\n\nBy bundling Tractors with the appropriate implements, we provide a complete, turnkey solution for our agricultural clients. Let us help you cultivate success.",
+                    "caption_short": "More than just tractors. We export the implements that boost productivity and yield. Find the right attachment for your farm.",
+                    "hashtags": ["#Agriculture", "#Farming", "#TractorImplements", "#AgriTech", "#FarmEquipment", "#Cultivator"],
+                    "cta": "Explore our range of agricultural implements.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot of a modern tractor with a cultivator attachment working in a neat field in rural India. The operator is silhouetted. The focus is on the cultivator turning the rich, dark soil. Background of the open field is heavily blurred. Warm, late afternoon light. Accents of orange (#FF7A00) on the equipment.",
+                        "title": "RBAS Global - Agricultural Implements",
+                        "alt_text": "A tractor with a cultivator attachment, operated by a silhouetted farmer in an Indian field."
+                    }
+                },
+                {
+                    "id": "rbas-20251006-w3-p1",
+                    "date": "2025-10-06",
+                    "day_of_week": "Mon",
+                    "week": 3,
+                    "primary_post_time_ist": "11:00",
+                    "objective": "awareness",
+                    "topic": "Thought Leadership",
+                    "content_text": "Choosing between buying new and used heavy equipment is a critical decision for any fleet manager. While new machines offer the latest technology and full warranties, high-quality used equipment can provide a significant advantage in Total Cost of Ownership (TCO).\n\nThe key is trusted sourcing. A well-maintained, pre-owned machine from a reputable brand can deliver 80-90% of the productivity of a new one at a fraction of the capital cost. This allows for faster ROI and frees up capital for other investments.\n\nAt RBAS Global, we specialize in sourcing and verifying premium used equipment, providing transparent histories and detailed inspection reports. We help our clients make informed decisions that balance performance with budget, ensuring long-term value.",
+                    "caption_short": "New vs. Used Equipment: Making the smart choice for your TCO. Trusted sourcing is key to unlocking value.",
+                    "hashtags": ["#TCO", "#FleetManagement", "#ConstructionBusiness", "#UsedEquipment", "#SmartInvestment", "#ThoughtLeadership"],
+                    "cta": "Contact us for a TCO consultation.",
+                    "image_prompt": {
+                        "prompt": "Conceptual, hyper-realistic shot. A split-screen image: on the left, a brand new, shiny excavator; on the right, a slightly worn but clean used excavator. Between them, a glowing, abstract representation of a balancing scale. The background is a neutral, dark grey studio setting, heavily blurred. No people visible.",
+                        "title": "RBAS Global - Balancing TCO",
+                        "alt_text": "A conceptual image balancing a new vs. a used excavator to represent Total Cost of Ownership."
+                    }
+                },
+                {
+                    "id": "rbas-20251008-w3-p2",
+                    "date": "2025-10-08",
+                    "day_of_week": "Wed",
+                    "week": 3,
+                    "primary_post_time_ist": "14:30",
+                    "objective": "consideration",
+                    "topic": "Maintenance Tip",
+                    "content_text": "Hydraulic systems are the lifeblood of an Excavator, powering every movement from the boom to the bucket. Proper maintenance is crucial for performance and longevity.\n\nA simple yet vital tip: regularly check hydraulic hoses for any signs of wear, such as cracks, abrasions, or leaks. A failing hose can lead to a sudden loss of pressure, causing catastrophic failure and significant safety risks.\n\nAlso, ensure you are using the correct grade of hydraulic fluid as specified by the OEM and changing it at recommended intervals. Clean fluid prevents contamination and premature wear of pumps and valves. Protecting your hydraulic system protects your entire investment.",
+                    "caption_short": "Protect your Excavator's power. Regular checks of hydraulic hoses and fluid can prevent costly failures. #MaintenanceMatters",
+                    "hashtags": ["#MaintenanceTips", "#Hydraulics", "#ExcavatorMaintenance", "#HeavyEquipmentTech", "#OperatorLife", "#PreventiveMaintenance"],
+                    "cta": "Get more pro maintenance tips on our blog.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic macro shot focusing on a clean hydraulic hose connection on an excavator. The background is the blurred machinery in industrial orange (#FF7A00) and grey (#6B7280). A silhouetted technician's gloved hand is pointing to the connection, as if inspecting it. Clean, workshop lighting.",
+                        "title": "RBAS Global - Hydraulic System Maintenance",
+                        "alt_text": "A macro shot of a technician's gloved hand inspecting a hydraulic hose on an excavator."
+                    }
+                },
+                {
+                    "id": "rbas-20251010-w3-p3",
+                    "date": "2025-10-10",
+                    "day_of_week": "Fri",
+                    "week": 3,
+                    "primary_post_time_ist": "10:30",
+                    "objective": "dealer-support",
+                    "topic": "Dealer Enablement",
+                    "content_text": "To our valued dealer network across the globe: your success is our success. That's why RBAS Global is more than just an equipment supplier—we are your strategic growth partner.\n\nWe empower our dealers with:\n- Priority Access: A diverse portfolio of equipment from top Indian OEMs.\n- Marketing Support: High-quality product images and technical specifications.\n- Logistics Excellence: Reliable, end-to-end shipping and documentation handling.\n- Transparent Pricing: Competitive rates that enable you to win in your market.\n\nWe are committed to building strong, long-term relationships that are founded on trust and mutual benefit. Let's work together to bring the best of Indian engineering to the world.",
+                    "caption_short": "Empowering our global dealer network with reliable products, seamless logistics, and dedicated support. Let's grow together.",
+                    "hashtags": ["#DealerNetwork", "#EquipmentDealer", "#Partnership", "#Growth", "#GlobalBusiness", "#B2B"],
+                    "cta": "Interested in becoming a dealer? Contact us.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot of two silhouetted individuals shaking hands in a modern office overlooking a yard filled with heavy equipment. One person is handing over a document. The background equipment is heavily blurred. The focus is on the handshake. Professional, indoor lighting. Blue (#1F4E79) and grey (#6B7280) tones.",
+                        "title": "RBAS Global - Dealer Partnership",
+                        "alt_text": "Silhouettes of two professionals shaking hands, sealing a dealership agreement."
+                    }
+                },
+                {
+                    "id": "rbas-20251011-w3-p4",
+                    "date": "2025-10-11",
+                    "day_of_week": "Sat",
+                    "week": 3,
+                    "primary_post_time_ist": "12:00",
+                    "objective": "lead-gen",
+                    "topic": "Turnkey Solutions",
+                    "content_text": "Outfitting an entire project? Sourcing equipment from multiple vendors is complex and time-consuming. RBAS Global simplifies this with our Turnkey Equipment Solutions.\n\nTell us your project requirements, and we will source, inspect, and bundle the entire fleet for you. From Excavators and Compactors for the groundwork to Graders and Loaders for the finishing touches, we provide a single point of contact for all your machinery needs.\n\nThis integrated approach saves you time, streamlines logistics, and ensures you get a cohesive set of reliable machines, all quality-assured and ready for export. Focus on managing your project, not your procurement.",
+                    "caption_short": "One project, one partner. Our Turnkey Equipment Solutions simplify your procurement process, from sourcing to delivery.",
+                    "hashtags": ["#TurnkeySolution", "#ProjectManagement", "#ConstructionProjects", "#EquipmentSourcing", "#Efficiency", "#OneStopShop"],
+                    "cta": "Get a quote for your project's full equipment needs.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic aerial/drone shot looking down on a variety of construction equipment (excavator, compactor, loader) neatly arranged in a yard in India. The operators are silhouetted, standing near their machines. The lighting is bright and even from an overcast day. Palette of orange (#FF7A00) and grey (#6B7280).",
+                        "title": "RBAS Global - Turnkey Equipment Fleet",
+                        "alt_text": "An aerial view of a complete fleet of construction equipment ready for a turnkey project."
+                    }
+                },
+                {
+                    "id": "rbas-20251013-w4-p1",
+                    "date": "2025-10-13",
+                    "day_of_week": "Mon",
+                    "week": 4,
+                    "primary_post_time_ist": "11:00",
+                    "objective": "consideration",
+                    "topic": "Use-Case",
+                    "content_text": "In mining operations, efficiency is everything. The ability to load and haul materials quickly and safely directly impacts profitability. This is where our sourced Excavators and Loaders excel.\n\nWe provide heavy-duty machinery designed for the rigors of the mining environment. Features like reinforced buckets, powerful engines, and advanced telematics for monitoring performance are standard. Our equipment helps operators move more material per hour, with less fuel consumption.\n\nFurthermore, our commitment to sourcing from OEMs that prioritize operator safety and comfort means your team can work more efficiently over long shifts. From overburden removal to ore loading, we provide the reliable muscle your mining operation needs to succeed.",
+                    "caption_short": "Boosting productivity in the mine. Our heavy-duty Excavators and Loaders are built for performance and reliability.",
+                    "hashtags": ["#MiningEquipment", "#HeavyDuty", "#Excavator", "#WheelLoader", "#MiningOperations", "#Productivity"],
+                    "cta": "Discuss your mining equipment needs with our specialists.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot from a low angle, looking up at a massive mining excavator loading a haul truck in a quarry in India. Both operators are silhouetted in their cabins. The scale of the machinery is emphasized. Strong, dramatic daylight. Palette of orange (#FF7A00) and earthy tones.",
+                        "title": "RBAS Global - Heavy-Duty Mining Equipment",
+                        "alt_text": "A large mining excavator loading a haul truck, operated by silhouetted workers."
+                    }
+                },
+                {
+                    "id": "rbas-20251015-w4-p2",
+                    "date": "2025-10-15",
+                    "day_of_week": "Wed",
+                    "week": 4,
+                    "primary_post_time_ist": "14:30",
+                    "objective": "awareness",
+                    "topic": "Company Value",
+                    "content_text": "Integrity and transparency are not just words in our brochure; they are the foundation of our business at RBAS Global.\n\nFor us, transparency means clear communication at every stage. You receive detailed equipment specifications, honest condition reports for used machinery, and clear, itemized quotes. There are no hidden fees or last-minute surprises.\n\nIntegrity means we stand by our promise. We deliver the equipment we committed to, in the condition we described, within the timeline we agreed upon. Our goal is not a quick sale but a long-term partnership built on trust.\n\nThis ethical approach has been the cornerstone of our growth since 2014, earning us the confidence of clients in over 25 countries.",
+                    "caption_short": "Integrity. Transparency. Trust. These are the values we bring to every partnership, every transaction, every day.",
+                    "hashtags": ["#OurValues", "#Integrity", "#Transparency", "#BusinessEthics", "#CustomerTrust", "#RBASGlobal"],
+                    "cta": "Experience the RBAS Global difference.",
+                    "image_prompt": {
+                        "prompt": "Conceptual, hyper-realistic shot of a crystal-clear, architecturally modern building that represents transparency. Inside, blurred silhouettes of people are working. The outside reflects a clean, blue sky. The image should feel clean, professional, and trustworthy. Primarily glass, steel, and light tones.",
+                        "title": "RBAS Global - Our Core Values",
+                        "alt_text": "A modern glass building symbolizing the business values of transparency and integrity."
+                    }
+                },
+                {
+                    "id": "rbas-20251017-w4-p3",
+                    "date": "2025-10-17",
+                    "day_of_week": "Fri",
+                    "week": 4,
+                    "primary_post_time_ist": "10:30",
+                    "objective": "lead-gen",
+                    "topic": "Product Spotlight",
+                    "content_text": "When it comes to soil and asphalt compaction, having the right machine is critical for achieving the specified density and ensuring the longevity of the finished surface. RBAS Global exports both Soil and Tandem Compactors to meet these diverse needs.\n\nOur Soil Compactors are perfect for embankments and foundations, featuring powerful vibratory systems and padfoot drums for cohesive soils. For asphalt paving, our Tandem Compactors provide smooth, consistent results with high-frequency vibration and excellent maneuverability.\n\nSourced from top Indian manufacturers, these machines are built for reliability and operator comfort, ensuring your paving and foundation projects are built on a solid base. Let us guide you to the right compactor for your specific application.",
+                    "caption_short": "The foundation of any good project. Choose the right Soil or Tandem Compactor for superior results. We export globally.",
+                    "hashtags": ["#Compactor", "#SoilCompaction", "#AsphaltPaving", "#RoadBuilding", "#CivilConstruction", "#Foundation"],
+                    "cta": "Get a quote for a Soil or Tandem Compactor.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot showing both a Soil Compactor and a Tandem Compactor side-by-side on a new road construction site in India. Silhouetted operators are standing near their machines. The background is a blurred vista of the project site. Clear, even daylight. Machines in industrial orange (#FF7A00) and grey (#6B7280).",
+                        "title": "RBAS Global - Compaction Equipment",
+                        "alt_text": "A Soil Compactor and a Tandem Compactor with silhouetted operators on a road construction site."
+                    }
+                },
+                {
+                    "id": "rbas-20251018-w4-p4",
+                    "date": "2025-10-18",
+                    "day_of_week": "Sat",
+                    "week": 4,
+                    "primary_post_time_ist": "12:00",
+                    "objective": "awareness",
+                    "topic": "Contact/Recap",
+                    "content_text": "Over the past month, we've shared insights into our products, our values, and our commitment to being your trusted global equipment partner. From powerful Excavators to precision Motor Graders, our goal is to deliver reliability from India to your doorstep.\n\nOur team is ready to assist with your next project, whether you need a single machine or a full turnkey fleet. We combine deep product knowledge with expertise in international logistics to provide solutions that are both effective and cost-efficient.\n\nThank you for following our journey. Let's build the future together. Contact our experts in Bengaluru to start the conversation.",
+                    "caption_short": "Ready to start your next project? Our team is here to help with all your construction, mining, and agricultural equipment needs.",
+                    "hashtags": ["#LetsBuild", "#ContactUs", "#GlobalPartner", "#ConstructionIndustry", "#MiningLife", "#RBASGlobal"],
+                    "cta": "Contact us via our website to discuss your needs.",
+                    "image_prompt": {
+                        "prompt": "Hyper-realistic shot of the RBAS Global team of silhouetted professionals standing together, looking out from a modern office window at a blurred view of the Bengaluru skyline. The mood is confident and forward-looking. The company's brand colors (#1F4E79, #FF7A00) are subtly present in the office decor. Professional indoor lighting.",
+                        "title": "RBAS Global - Your Expert Team",
+                        "alt_text": "The silhouetted RBAS Global team looking out at a city skyline, ready to assist clients."
+                    }
+                }
+            ];
+            
+            const competitorData = [
+                {
+                    name: "JCB India",
+                    summary: "High frequency posters, often multiple times a day. Content is very product-focused, with heavy use of high-quality video and professional imagery. Strong emphasis on 'Made in India' for the local market. Engagement is consistently high.",
+                    takeaway: "RBAS can differentiate by focusing on export logistics and multi-OEM sourcing, areas JCB doesn't highlight."
+                },
+                {
+                    name: "Caterpillar India",
+                    summary: "Posts focus on technology, sustainability, and large-scale project case studies. Professional and corporate tone. They post regularly but less frequently than JCB, typically 3-5 times a week. Use a mix of global and localized content.",
+                    takeaway: "Opportunity for RBAS to be more agile and direct, focusing on the practical needs of mid-sized contractors."
+                },
+                {
+                    name: "Tata Hitachi",
+                    summary: "Content strategy highlights reliability, customer service, and their extensive dealer network within India. They use customer testimonials and operator stories effectively. Posting cadence is steady at around 4-5 posts per week.",
+                    takeaway: "RBAS can emulate their customer-centric approach but apply it to international clients and case studies."
+                },
+                {
+                    name: "SANY India",
+                    summary: "Aggressive content strategy focused on product launches, sales milestones, and corporate events. Heavy use of graphics and event photography. They are very active during Indian business hours, particularly mid-morning.",
+                    takeaway: "RBAS should avoid a purely sales-driven tone and instead focus on providing value through tips and insights."
+                }
+            ];
+
+            const calendarGrid = document.getElementById('calendar-grid');
+            const weekFilter = document.getElementById('week-filter');
+            const topicFilter = document.getElementById('topic-filter');
+            const objectiveFilter = document.getElementById('objective-filter');
+            
+            const modal = document.getElementById('postModal');
+            const modalContent = document.getElementById('modalContent');
+            const closeModalBtn = document.getElementById('closeModal');
+            
+            const topics = [...new Set(calendarData.map(p => p.topic))];
+            const objectives = [...new Set(calendarData.map(p => p.objective))];
+
+            topics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic;
+                topicFilter.appendChild(option);
+            });
+            
+            objectives.forEach(objective => {
+                const option = document.createElement('option');
+                option.value = objective;
+                option.textContent = objective.charAt(0).toUpperCase() + objective.slice(1).replace('-', ' ');
+                objectiveFilter.appendChild(option);
+            });
+            
+            function renderCalendar(posts) {
+                calendarGrid.innerHTML = '';
+                if (posts.length === 0) {
+                    calendarGrid.innerHTML = `<div class="col-span-full text-center py-12 bg-white rounded-lg shadow"><p class="text-gray-500">No posts match the current filters.</p></div>`;
+                    return;
+                }
+                posts.forEach(post => {
+                    const postCard = `
+                        <div class="bg-white rounded-lg shadow p-4 flex flex-col hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer" data-id="${post.id}">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold uppercase text-white bg-[#${post.objective === 'lead-gen' ? 'FF7A00' : post.objective === 'consideration' ? '1F4E79' : '6B7280'}] px-2 py-1 rounded-full">${post.objective.replace('-', ' ')}</span>
+                                <span class="text-sm font-medium text-gray-500">${post.date}</span>
+                            </div>
+                            <h4 class="font-bold text-gray-800 flex-grow">${post.topic}</h4>
+                            <p class="text-sm text-gray-600 mt-2 line-clamp-2">${post.caption_short}</p>
+                            <div class="mt-4 pt-2 border-t border-gray-200 text-xs text-gray-400">
+                                Week ${post.week} &bull; ${post.day_of_week} @ ${post.primary_post_time_ist} IST
+                            </div>
+                        </div>
+                    `;
+                    calendarGrid.innerHTML += postCard;
+                });
+            }
+
+            function applyFilters() {
+                const selectedWeek = weekFilter.value;
+                const selectedTopic = topicFilter.value;
+                const selectedObjective = objectiveFilter.value;
+
+                let filteredPosts = calendarData;
+
+                if (selectedWeek !== 'all') {
+                    filteredPosts = filteredPosts.filter(p => p.week == selectedWeek);
+                }
+                if (selectedTopic !== 'all') {
+                    filteredPosts = filteredPosts.filter(p => p.topic === selectedTopic);
+                }
+                if (selectedObjective !== 'all') {
+                    filteredPosts = filteredPosts.filter(p => p.objective === selectedObjective);
+                }
+                
+                renderCalendar(filteredPosts);
+            }
+            
+            function showModal(postId) {
+                const post = calendarData.find(p => p.id === postId);
+                if (!post) return;
+
+                document.getElementById('modalTitle').textContent = post.topic;
+                document.getElementById('modalDate').textContent = `${post.date} (${post.day_of_week}) @ ${post.primary_post_time_ist} IST`;
+                document.getElementById('modalContentText').textContent = post.content_text;
+                document.getElementById('modalCaptionShort').textContent = `"${post.caption_short}"`;
+                document.getElementById('modalCta').textContent = post.cta;
+
+                const hashtagsContainer = document.getElementById('modalHashtags');
+                hashtagsContainer.innerHTML = '';
+                post.hashtags.forEach(tag => {
+                    const tagEl = document.createElement('span');
+                    tagEl.className = 'bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded';
+                    tagEl.textContent = tag;
+                    hashtagsContainer.appendChild(tagEl);
+                });
+                
+                document.getElementById('modalImageTitle').textContent = post.image_prompt.title;
+                document.getElementById('modalImagePrompt').textContent = post.image_prompt.prompt;
+                document.getElementById('modalImageAltText').textContent = `Alt Text: "${post.image_prompt.alt_text}"`;
+                
+                const link = document.getElementById('modalLink');
+                link.href = "https://www.rbasglobal.com/contact"; // Placeholder link
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95');
+                    modal.classList.remove('opacity-0');
+                }, 10);
+            }
+
+            function hideModal() {
+                 modalContent.classList.add('scale-95');
+                 modal.classList.add('opacity-0');
+                 setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 250);
+            }
+
+            function renderCompetitors() {
+                const accordion = document.getElementById('competitor-accordion');
+                competitorData.forEach((comp, index) => {
+                    const item = `
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <button class="w-full text-left p-4 flex justify-between items-center" data-target="comp-content-${index}">
+                            <h3 class="text-lg font-semibold text-[#1F4E79]">${comp.name}</h3>
+                            <span class="transform transition-transform duration-300">&#9662;</span>
+                        </button>
+                        <div id="comp-content-${index}" class="px-4 pb-4 hidden">
+                            <p class="text-gray-600 mb-2"><strong class="font-medium text-gray-700">Summary:</strong> ${comp.summary}</p>
+                            <p class="text-gray-600 bg-orange-50 p-3 rounded-md border border-orange-200"><strong class="font-medium text-orange-800">Strategic Takeaway for RBAS:</strong> ${comp.takeaway}</p>
+                        </div>
+                    </div>
+                    `;
+                    accordion.innerHTML += item;
+                });
+            }
+            
+            function setupNavScroll() {
+                const links = document.querySelectorAll('.nav-link');
+                const sections = document.querySelectorAll('main section');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            links.forEach(link => {
+                                link.classList.remove('active');
+                                if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                    link.classList.add('active');
+                                }
+                            });
+                        }
+                    });
+                }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+
+                sections.forEach(section => observer.observe(section));
+
+                links.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const targetId = link.getAttribute('href');
+                        document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+                    });
+                });
+            }
+
+            // Initializations
+            renderCalendar(calendarData);
+            renderCompetitors();
+            setupNavScroll();
+
+            // Event Listeners
+            weekFilter.addEventListener('change', applyFilters);
+            topicFilter.addEventListener('change', applyFilters);
+            objectiveFilter.addEventListener('change', applyFilters);
+            
+            calendarGrid.addEventListener('click', function(e){
+                const card = e.target.closest('[data-id]');
+                if (card) {
+                    showModal(card.dataset.id);
+                }
+            });
+
+            closeModalBtn.addEventListener('click', hideModal);
+            modal.addEventListener('click', function(e) {
+                if(e.target === modal) {
+                    hideModal();
+                }
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === "Escape" && !modal.classList.contains('hidden')) {
+                    hideModal();
+                }
+            });
+
+            document.getElementById('competitor-accordion').addEventListener('click', (e) => {
+                const button = e.target.closest('button');
+                if(button) {
+                    const targetId = button.dataset.target;
+                    const content = document.getElementById(targetId);
+                    const arrow = button.querySelector('span');
+                    content.classList.toggle('hidden');
+                    arrow.classList.toggle('rotate-180');
+                }
+            });
+
+            // Charts
+            const topicCounts = calendarData.reduce((acc, post) => {
+                acc[post.topic] = (acc[post.topic] || 0) + 1;
+                return acc;
+            }, {});
+            
+            const objectiveCounts = calendarData.reduce((acc, post) => {
+                acc[post.objective] = (acc[post.objective] || 0) + 1;
+                return acc;
+            }, {});
+
+            const chartColors = {
+                primary: '#6B7280',
+                secondary: '#FF7A00',
+                accent1: '#1F4E79',
+                accent2: '#E5E7EB',
+                other: ['#9CA3AF', '#F97316', '#3B82F6', '#FBBF24']
+            };
+            
+            new Chart(document.getElementById('contentMixChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(topicCounts),
+                    datasets: [{
+                        label: 'Content Mix',
+                        data: Object.values(topicCounts),
+                        backgroundColor: [chartColors.accent1, chartColors.secondary, chartColors.primary, ...chartColors.other],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += `${context.parsed} posts`;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('objectivesChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(objectiveCounts).map(o => o.charAt(0).toUpperCase() + o.slice(1).replace('-', ' ')),
+                    datasets: [{
+                        label: 'Number of Posts',
+                        data: Object.values(objectiveCounts),
+                        backgroundColor: chartColors.accent1,
+                        borderColor: chartColors.accent1,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                             ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
